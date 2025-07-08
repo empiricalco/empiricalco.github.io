@@ -5,21 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Empirical Co</title>
   <style>
+    /* Reset and full‑screen setup */
     html, body {
       margin: 0;
       padding: 0;
-      height: 100vh;
-      width: 100vw;
-    }
-    .hero {
       width: 100%;
       height: 100%;
-      /* center the image, no repeat */
+    }
+
+    /* Hero wrapper */
+    .hero {
+      width: 100vw;
+      height: 100vh;
       background: url('ec_background.png') no-repeat center center;
-      /* contain ensures the *whole* image fits into the viewport */
-      background-size: contain;
-      /* fallback bg-color if letterbox shows */
-      background-color: #fff;
+      background-size: 100% auto; /* fill width by default */
+    }
+
+    /* If the viewport is taller than 16:9, fill height instead */
+    @media (max-aspect-ratio: 16/9) {
+      .hero {
+        background-size: auto 100%;
+      }
     }
   </style>
 </head>
