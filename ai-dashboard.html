@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Agent Operations Dashboard | Empirical Co</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 10% 20%, rgba(67, 97, 238, 0.25) 0%, rgba(15, 21, 53, 0.9) 42%, rgba(18, 18, 28, 1) 100%);
+      --card-gradient: linear-gradient(145deg, rgba(35, 40, 80, 0.75), rgba(18, 20, 40, 0.85));
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #43c7ff;
+      --accent-soft: rgba(67, 199, 255, 0.16);
+      --success: #65e5a7;
+      --warning: #f7c948;
+      --danger: #ff6b6b;
+      --neutral: rgba(255, 255, 255, 0.65);
+      --text-strong: #f5f7ff;
+      --text-soft: rgba(235, 240, 255, 0.6);
+      --grid-gap: 1.75rem;
+      --sidebar-width: 260px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #060915;
+      font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text-soft);
+      min-height: 100%;
+    }
+
+    body {
+      background-image: var(--bg-gradient), url('tech-innovation.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    /* Global nav overrides */
+    .logo-container {
+      position: fixed;
+      top: 1.5rem;
+      left: 2rem;
+      z-index: 1000;
+    }
+
+    .logo {
+      height: 46px;
+      filter: brightness(0) invert(1);
+    }
+
+    .site-header {
+      position: fixed;
+      top: 1.5rem;
+      right: 2rem;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.75rem;
+    }
+
+    .menu-toggle {
+      background: rgba(18, 22, 45, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      width: 46px;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+      background: rgba(18, 22, 45, 0.85);
+      transform: translateY(-1px);
+    }
+
+    .menu-icon,
+    .menu-icon::before,
+    .menu-icon::after {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: #fff;
+      border-radius: 999px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      position: relative;
+    }
+
+    .menu-icon::before {
+      position: absolute;
+      top: -6px;
+      left: 0;
+    }
+
+    .menu-icon::after {
+      position: absolute;
+      top: 6px;
+      left: 0;
+    }
+
+    .menu-toggle[aria-expanded="true"] .menu-icon {
+      background: transparent;
+    }
+
+    .menu-toggle[aria-expanded="true"] .menu-icon::before {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    .menu-toggle[aria-expanded="true"] .menu-icon::after {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    .site-nav {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      width: 240px;
+      background: rgba(10, 15, 35, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      padding: 1rem 0;
+      overflow: hidden;
+    }
+
+    .site-nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .site-nav a {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: rgba(245, 247, 255, 0.8);
+      text-decoration: none;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .site-nav a:hover,
+    .site-nav a:focus {
+      color: var(--text-strong);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Dashboard layout */
+    .dashboard-shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      gap: var(--grid-gap);
+      padding: 120px 3vw 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 120px;
+      align-self: start;
+      padding: 1.5rem;
+      border-radius: 24px;
+      background: var(--card-gradient);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 40px 80px rgba(5, 10, 30, 0.45);
+    }
+
+    .sidebar h1 {
+      margin: 0 0 1rem;
+      font-size: 1.5rem;
+      color: var(--text-strong);
+      letter-spacing: 0.02em;
+    }
+
+    .sidebar p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .sidebar .quick-meta {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      display: grid;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .quick-meta span {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .main-grid {
+      display: grid;
+      gap: var(--grid-gap);
+    }
+
+    .grid-section {
+      display: grid;
+      gap: var(--grid-gap);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: 0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .card {
+      background: var(--card-gradient);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 1.75rem;
+      box-shadow: 0 40px 80px rgba(8, 12, 40, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .card:hover::after {
+      opacity: 1;
+    }
+
+    .card h3 {
+      margin: 0 0 1rem;
+      font-size: 1.15rem;
+      color: var(--text-strong);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--grid-gap);
+    }
+
+    .metric-card {
+      position: relative;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: rgba(67, 97, 238, 0.12);
+      border: 1px solid rgba(67, 199, 255, 0.25);
+      overflow: hidden;
+    }
+
+    .metric-card h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .metric-value {
+      margin-top: 1.25rem;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .trend {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .trend span {
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .trend .up { background: rgba(101, 229, 167, 0.18); color: var(--success); }
+    .trend .down { background: rgba(255, 107, 107, 0.18); color: var(--danger); }
+
+    .activity-feed {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .activity-item {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .activity-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      background: rgba(67, 199, 255, 0.12);
+      color: var(--accent);
+    }
+
+    .activity-item h4 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-strong);
+    }
+
+    .activity-item p {
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .status {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--grid-gap);
+      margin-top: 1.25rem;
+    }
+
+    .project-card {
+      position: relative;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: rgba(15, 15, 35, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .project-card::before {
+      content: attr(data-status);
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(67, 199, 255, 0.16);
+      color: var(--accent);
+      border: 1px solid rgba(67, 199, 255, 0.35);
+    }
+
+    .project-team {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .agent-chip {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .timeline {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .timeline-step {
+      position: relative;
+      padding-left: 2.5rem;
+    }
+
+    .timeline-step::before {
+      content: '';
+      position: absolute;
+      left: 0.9rem;
+      top: 0.25rem;
+      bottom: -1rem;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(67, 199, 255, 0.5), rgba(67, 199, 255, 0));
+    }
+
+    .timeline-step:last-child::before {
+      bottom: 1rem;
+    }
+
+    .timeline-step::after {
+      content: attr(data-step);
+      position: absolute;
+      left: 0;
+      top: 0.25rem;
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      border: 2px solid rgba(67, 199, 255, 0.4);
+      background: rgba(6, 9, 21, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--text-strong);
+      font-size: 0.9rem;
+    }
+
+    .collaboration-map {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .deployment-group {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .deployment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-strong);
+    }
+
+    .flow-diagram {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .agent-node {
+      position: relative;
+      min-width: 180px;
+      padding: 1rem;
+      border-radius: 16px;
+      background: rgba(6, 10, 28, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(5, 10, 30, 0.25);
+    }
+
+    .agent-node strong {
+      display: block;
+      color: var(--text-strong);
+      margin-bottom: 0.25rem;
+    }
+
+    .agent-role {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .handoff {
+      position: relative;
+      padding: 0.8rem 1.25rem;
+      border-radius: 999px;
+      background: rgba(67, 199, 255, 0.12);
+      border: 1px dashed rgba(67, 199, 255, 0.4);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .handoff::before,
+    .handoff::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 24px;
+      height: 1px;
+      background: rgba(67, 199, 255, 0.4);
+    }
+
+    .handoff::before {
+      left: -24px;
+    }
+
+    .handoff::after {
+      right: -24px;
+    }
+
+    .handoff.permanent {
+      background: rgba(101, 229, 167, 0.12);
+      border-color: rgba(101, 229, 167, 0.35);
+      color: var(--success);
+    }
+
+    .handoff.permanent::before,
+    .handoff.permanent::after {
+      background: rgba(101, 229, 167, 0.35);
+    }
+
+    .permanent-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--grid-gap);
+      margin-top: 1.25rem;
+    }
+
+    .insight-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .insight-card h4 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      color: var(--text-strong);
+    }
+
+    .insight-metric {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend span::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: 0.65;
+    }
+
+    .legend .live { color: var(--accent); }
+    .legend .backlog { color: var(--warning); }
+    .legend .blocked { color: var(--danger); }
+
+    footer {
+      margin: 4rem auto 2rem;
+      max-width: 1400px;
+      padding: 0 3vw;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 1080px) {
+      :root {
+        --sidebar-width: 100%;
+      }
+      .dashboard-shell {
+        grid-template-columns: 1fr;
+        padding-top: 140px;
+      }
+      .sidebar {
+        position: relative;
+        top: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .logo-container {
+        top: 1rem;
+        left: 1.25rem;
+      }
+      .logo {
+        height: 38px;
+      }
+      .site-header {
+        top: 1rem;
+        right: 1.25rem;
+      }
+      .dashboard-shell {
+        padding: 120px 1.5rem 3rem;
+      }
+      .card,
+      .project-card,
+      .deployment-group,
+      .insight-card {
+        border-radius: 18px;
+      }
+      .flow-diagram {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .handoff::before,
+      .handoff::after {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-container">
+    <img src="logo.png" alt="Empirical Co" class="logo">
+  </div>
+
+  <header class="site-header">
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">
+      <span class="sr-only">Open main menu</span>
+      <span class="menu-icon" aria-hidden="true"></span>
+    </button>
+    <nav id="primary-navigation" class="site-nav" aria-label="Primary" hidden>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="littlebike.html">Little Bike</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="ai-dashboard.html">AI Agent Dashboard</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="dashboard-shell">
+    <aside class="sidebar">
+      <h1>AI Agent Ops Center</h1>
+      <p>Monitor agent activity, project health, and orchestration flows across every initiative. Designed for teams running fully autonomous, role-based AI programs.</p>
+      <div class="quick-meta">
+        <span><strong>Live Agents</strong> <em>12</em></span>
+        <span><strong>Projects</strong> <em>6 active / 3 planned</em></span>
+        <span><strong>Deployments</strong> <em>4 permanent pods</em></span>
+      </div>
+    </aside>
+
+    <section class="main-grid">
+      <section class="grid-section">
+        <div class="section-header">
+          <h2 class="section-title">Mission Control</h2>
+          <p class="section-subtitle">Updated in real time from agent telemetry</p>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h4>Active Sessions</h4>
+            <div class="metric-value" id="metric-active">12</div>
+            <div class="trend"><span class="up" id="trend-active">+2 live</span> in last 10 minutes</div>
+          </div>
+          <div class="metric-card">
+            <h4>Critical Incidents</h4>
+            <div class="metric-value" id="metric-incidents">1</div>
+            <div class="trend"><span class="down" id="trend-incidents">-3 week</span> since last week</div>
+          </div>
+          <div class="metric-card">
+            <h4>Average Cycle</h4>
+            <div class="metric-value" id="metric-cycle">18m</div>
+            <div class="trend"><span class="up" id="trend-cycle">+12%</span> faster vs baseline</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Live Activity Feed</h3>
+          <div class="legend">
+            <span class="live">Live</span>
+            <span class="backlog">Queued</span>
+            <span class="blocked">Blocked</span>
+          </div>
+          <div class="activity-feed" id="activity-feed"></div>
+        </div>
+      </section>
+
+      <section class="grid-section">
+        <div class="section-header">
+          <h2 class="section-title">Projects & Delivery Streams</h2>
+          <p class="section-subtitle">See who is working on what right now</p>
+        </div>
+        <div class="projects-grid" id="projects-grid"></div>
+        <div class="card">
+          <h3>Delivery Timeline</h3>
+          <div class="timeline">
+            <div class="timeline-step" data-step="1">
+              <h4>Opportunity Intake</h4>
+              <p>Client success AI agent gathers new briefs and validates feasibility against the capability matrix.</p>
+            </div>
+            <div class="timeline-step" data-step="2">
+              <h4>Scoping & Solution Design</h4>
+              <p>Architect agents pair with research copilots to draft solution pathways, SLA commitments, and risk mitigations.</p>
+            </div>
+            <div class="timeline-step" data-step="3">
+              <h4>Execution Pod Launch</h4>
+              <p>Automation specialists deploy playbooks, monitor telemetry dashboards, and adjust tasks based on feedback loops.</p>
+            </div>
+            <div class="timeline-step" data-step="4">
+              <h4>Handoff & Continuous Learning</h4>
+              <p>Success and knowledge-base agents collect outcomes, document playbook updates, and redeploy learnings to future pods.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid-section">
+        <div class="section-header">
+          <h2 class="section-title">Collaboration Pods</h2>
+          <p class="section-subtitle">Visualize agent roles, responsibilities, and handoffs</p>
+        </div>
+        <div class="collaboration-map">
+          <div class="deployment-group">
+            <div class="deployment-header">
+              <h3>Product Discovery Sprint</h3>
+              <span class="permanent-label">Rotational deployment</span>
+            </div>
+            <div class="flow-diagram">
+              <div class="agent-node">
+                <strong>Scout-01</strong>
+                <div class="agent-role">Research Lead</div>
+                <p>Surfaces customer signals, consolidates market intelligence, shares insights hourly.</p>
+              </div>
+              <div class="handoff">Curated Insights + Next Best Questions</div>
+              <div class="agent-node">
+                <strong>Strategist-07</strong>
+                <div class="agent-role">Strategy Architect</div>
+                <p>Maps opportunity areas, drafts solution scenarios, aligns with product OKRs.</p>
+              </div>
+              <div class="handoff permanent">Execution Blueprint + Approval Criteria</div>
+              <div class="agent-node">
+                <strong>Builder-21</strong>
+                <div class="agent-role">Automation Engineer</div>
+                <p>Generates workflows, configures automations, syncs deliverables with QA agent.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="deployment-group">
+            <div class="deployment-header">
+              <h3>Support Continuity Pod</h3>
+              <span class="permanent-label">Permanent triad</span>
+            </div>
+            <div class="flow-diagram">
+              <div class="agent-node">
+                <strong>Helm-02</strong>
+                <div class="agent-role">Customer Liaison</div>
+                <p>Receives escalations, tags urgency, enriches context with historical resolutions.</p>
+              </div>
+              <div class="handoff permanent">Context Pack + Customer Sentiment</div>
+              <div class="agent-node">
+                <strong>Resolve-05</strong>
+                <div class="agent-role">Resolution Specialist</div>
+                <p>Proposes interventions, simulates impact, requests approvals when thresholds met.</p>
+              </div>
+              <div class="handoff permanent">Remediation Plan + SLA Timer</div>
+              <div class="agent-node">
+                <strong>Anchor-03</strong>
+                <div class="agent-role">Knowledge Steward</div>
+                <p>Documents outcomes, updates knowledge graph, trains future responses.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid-section">
+        <div class="section-header">
+          <h2 class="section-title">Capacity & Readiness</h2>
+          <p class="section-subtitle">Balance utilization with new opportunities</p>
+        </div>
+        <div class="insights-grid">
+          <div class="insight-card">
+            <h4>Utilization Forecast</h4>
+            <div class="insight-metric" id="metric-utilization">72%</div>
+            <p>Projected capacity for the next 7 days across all pods. Suggests bandwidth for one additional rapid prototype.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Queue Health</h4>
+            <div class="insight-metric" id="metric-queue">18</div>
+            <p>Queued tasks awaiting assignment. Largest backlog in Automation Engineering — consider spinning up Builder-22.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Playbook Drift</h4>
+            <div class="insight-metric" id="metric-drift">3%</div>
+            <p>Variance between scripted handoffs and observed collaboration. Within tolerance, but monitor Support Continuity pod.</p>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    Concept dashboard inspired by the Vision UI design language. Customize agent data feeds, telemetry, and visual connectors to match your stack.
+  </footer>
+
+  <script>
+    (function () {
+      const toggle = document.querySelector('.menu-toggle');
+      const nav = document.getElementById('primary-navigation');
+      if (!toggle || !nav) {
+        return;
+      }
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        nav.hidden = expanded;
+        nav.classList.toggle('open', !expanded);
+      });
+      document.addEventListener('click', (event) => {
+        if (!nav.classList.contains('open')) {
+          return;
+        }
+        if (!nav.contains(event.target) && !toggle.contains(event.target)) {
+          toggle.setAttribute('aria-expanded', 'false');
+          nav.hidden = true;
+          nav.classList.remove('open');
+        }
+      });
+    })();
+
+    const activityFeed = document.getElementById('activity-feed');
+    const projectsGrid = document.getElementById('projects-grid');
+
+    const activities = [
+      { icon: '⚡️', title: 'Builder-21 deployed automation patch', status: 'Live', detail: 'Rolled out workflow updates for Little Bike onboarding funnel.' },
+      { icon: '🧭', title: 'Scout-01 synthesizing new research pulse', status: 'Queued', detail: 'Waiting for strategist review on sustainability trend analysis.' },
+      { icon: '🤝', title: 'Helm-02 completed escalation handoff', status: 'Live', detail: 'Customer escalation resolved; SLA reset to 00:45.' },
+      { icon: '🛠️', title: 'Resolve-05 needs approval', status: 'Blocked', detail: 'Automation requires human validation for payment rerouting.' }
+    ];
+
+    const projects = [
+      {
+        name: 'Little Bike Launch',
+        status: 'In Flight',
+        summary: 'Coordinating marketing assets, lifecycle automation, and partner onboarding.',
+        team: ['Strategist-07', 'Builder-21', 'QA-04']
+      },
+      {
+        name: 'Supply Chain Optimizer',
+        status: 'Discovery',
+        summary: 'AI-led diagnostics identifying inventory volatility and forecasting interventions.',
+        team: ['Scout-01', 'Analyst-11', 'Ops-09']
+      },
+      {
+        name: 'Support Intelligence',
+        status: 'Live',
+        summary: 'Continuous improvement pod managing multi-channel support automation.',
+        team: ['Helm-02', 'Resolve-05', 'Anchor-03']
+      },
+      {
+        name: 'Partner Enablement',
+        status: 'Design',
+        summary: 'Building agent-driven onboarding experiences for reseller program.',
+        team: ['Strategist-07', 'Writer-08', 'Guide-06']
+      }
+    ];
+
+    const statusColor = {
+      'Live': 'var(--accent)',
+      'In Flight': 'var(--accent)',
+      'Discovery': 'var(--warning)',
+      'Design': 'var(--neutral)',
+      'Queued': 'var(--warning)',
+      'Blocked': 'var(--danger)'
+    };
+
+    function renderActivity() {
+      activityFeed.innerHTML = '';
+      activities.forEach((activity) => {
+        const item = document.createElement('div');
+        item.className = 'activity-item';
+        item.innerHTML = `
+          <div class="activity-icon" style="background: ${activity.status === 'Live' ? 'rgba(101, 229, 167, 0.12)' : activity.status === 'Blocked' ? 'rgba(255, 107, 107, 0.12)' : 'rgba(247, 201, 72, 0.12)'}; color: ${statusColor[activity.status] || 'var(--accent)'}">${activity.icon}</div>
+          <div>
+            <div class="status">${activity.status}</div>
+            <h4>${activity.title}</h4>
+            <p>${activity.detail}</p>
+          </div>`;
+        activityFeed.appendChild(item);
+      });
+    }
+
+    function renderProjects() {
+      projectsGrid.innerHTML = '';
+      projects.forEach((project) => {
+        const card = document.createElement('article');
+        card.className = 'project-card';
+        card.dataset.status = project.status;
+        card.innerHTML = `
+          <h3>${project.name}</h3>
+          <p>${project.summary}</p>
+          <div class="project-team">
+            ${project.team.map((agent) => `<span class="agent-chip">${agent}</span>`).join('')}
+          </div>`;
+        projectsGrid.appendChild(card);
+      });
+    }
+
+    function simulateRealtime() {
+      const activeMetric = document.getElementById('metric-active');
+      const activeTrend = document.getElementById('trend-active');
+      const queueMetric = document.getElementById('metric-queue');
+
+      let activeCount = 12;
+      let queueCount = 18;
+      setInterval(() => {
+        const delta = Math.round((Math.random() - 0.4) * 2);
+        activeCount = Math.max(8, activeCount + delta);
+        queueCount = Math.max(12, queueCount + Math.round((Math.random() - 0.5) * 3));
+        activeMetric.textContent = activeCount;
+        activeTrend.textContent = `${delta >= 0 ? '+' : ''}${delta} live`;
+        queueMetric.textContent = queueCount;
+      }, 6000);
+    }
+
+    renderActivity();
+    renderProjects();
+    simulateRealtime();
+  </script>
+</body>
+</html>
